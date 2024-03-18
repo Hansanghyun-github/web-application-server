@@ -1,11 +1,8 @@
-package util;
+package com.example.util;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 
 public class HttpRequestUtils {
     /**
@@ -27,8 +24,8 @@ public class HttpRequestUtils {
     }
 
     private static Map<String, String> parseValues(String values, String separator) {
-        if (Strings.isNullOrEmpty(values)) {
-            return Maps.newHashMap();
+        if (values == null || values.isBlank()) {
+            return Map.of();
         }
 
         String[] tokens = values.split(separator);
@@ -37,7 +34,7 @@ public class HttpRequestUtils {
     }
 
     static Pair getKeyValue(String keyValue, String regex) {
-        if (Strings.isNullOrEmpty(keyValue)) {
+        if (keyValue == null || keyValue.isBlank()) {
             return null;
         }
 
