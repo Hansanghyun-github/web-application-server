@@ -14,6 +14,12 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 dependencies {
     implementation "ch.qos.logback:logback-classic:1.4.14"
     implementation "org.slf4j:slf4j-api:1.7.6"
@@ -22,6 +28,13 @@ dependencies {
     testImplementation "org.mockito:mockito-core:5.4.0"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.2"
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    //테스트에서 lombok 사용
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 
 }
 
