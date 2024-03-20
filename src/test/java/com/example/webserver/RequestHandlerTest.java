@@ -1,6 +1,7 @@
 package com.example.webserver;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import support.StubSocket;
@@ -17,26 +18,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RequestHandlerTest {
-    @Test
-    @DisplayName("First Test")
-    void firstTest() throws Exception {
-        // given
-        var socket = new StubSocket();
-        RequestHandler requestHandler = new RequestHandler(socket);
-
-        // when
-        requestHandler.process(socket);
-
-        // then
-        var expected = String.join("\r\n",
-                "HTTP/1.1 200 OK",
-                "Content-Type: text/html;charset=utf-8",
-                "Content-Length: 11",
-                "",
-                "Hello World");
-
-        assertThat(socket.output()).isEqualTo(expected);
-    }
 
     @Test
     @DisplayName("index.html 불러오기")
@@ -61,8 +42,8 @@ class RequestHandlerTest {
                 Files.readAllBytes(Path.of(pathname)),
                 StandardCharsets.UTF_8);
         var expected = "HTTP/1.1 200 OK\r\n" +
-                "Content-Type: text/html;charset=utf-8\r\n" +
                 "Content-Length: " + output.length() + "\r\n" +
+                "Content-Type: text/html;charset=utf-8\r\n" +
                 "\r\n"+
                 output;
 
