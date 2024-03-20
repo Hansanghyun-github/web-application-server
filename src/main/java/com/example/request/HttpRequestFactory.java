@@ -15,7 +15,7 @@ public class HttpRequestFactory {
         HttpRequest request = new HttpRequest();
         String str = reader.readLine();
         if(str == null || str.isBlank())
-            throw new IllegalArgumentException("Invalid Request");
+            throw new IllegalArgumentException("Invalid Http Request");
         request.setStartLine(str);
         parseHeader(reader, request);
         parseMessageBody(reader, request);

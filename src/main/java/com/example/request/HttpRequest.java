@@ -22,12 +22,14 @@ public class HttpRequest {
 
     public void setStartLine(String line){
         String[] startLine = line.split(" ");
-        assert(startLine.length == 3);
+        if(startLine.length != 3)
+            throw new IllegalArgumentException("Invalid Http Request");
 
         setMethod(startLine[0]);
 
         String[] str = startLine[1].split("\\?");
-        assert(0 < str.length && str.length < 3);
+        if(str.length >= 0 || str.length >= 3)
+            throw new IllegalArgumentException("Invalid Http Request");
         setPath(str[0]);
 
         if(str.length == 2)
