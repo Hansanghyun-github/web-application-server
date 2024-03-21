@@ -2,6 +2,9 @@ package com.example.webserver;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import com.example.request.HttpRequest;
 import com.example.request.HttpRequestFactory;
@@ -27,23 +30,33 @@ public class RequestHandler extends Thread {
     public void process(final Socket connection) {
         try (final var in = connection.getInputStream();
              final var out = connection.getOutputStream()) {
-            BufferedReader reader = getBufferedReader(in);
+            // TODO Exception을 Catch할 클래스(필터)가 필요하다.
 
+            BufferedReader reader = getBufferedReader(in);
             HttpRequest request = HttpRequestFactory.parse(reader);
             HttpResponse response = new HttpResponse(request.getVersion());
 
+            log.debug("method: {} path: {}", request.getMethod(), request.getPath());
             DispatcherServlet.frontController(request, response);
 
-            BufferedWriter writer = getBufferedWriter(out);
-            response.writeTo(writer);
-            writer.flush();
+            DataOutputStream dos = new DataOutputStream(out);
+            byte[] body = response.getMessageBody().getBytes();
+            response200Header(dos, body.length);
+            responseBody(dos, body);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
     }
 
-    private static BufferedWriter getBufferedWriter(OutputStream out) {
-        return new BufferedWriter(new OutputStreamWriter(out));
+    private String getRequest(BufferedReader reader) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        String str;
+        while((str = reader.readLine()) != null){
+            sb.append(str);
+            sb.append("\r\n");
+        }
+
+        return sb.toString();
     }
 
     private static BufferedReader getBufferedReader(InputStream in) {
@@ -53,8 +66,8 @@ public class RequestHandler extends Thread {
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK\r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("content-type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("content-length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());

@@ -33,21 +33,25 @@ public class HttpResponse {
         this.messageBody = messageBody;
     }
 
-    public void writeTo(BufferedWriter writer) throws IOException {
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
         String startLine = String.join(" ",
                 version,
                 "200",
                 statusCode.toString());
-        writer.write(startLine);
-        writer.write("\r\n");
+        sb.append(startLine);
+        sb.append("\r\n");
         for(Map.Entry e : headers.entrySet()){
-            writer.write(e.getKey() + ": "+e.getValue());
-            writer.write("\r\n");
+            sb.append(e.getKey() + ": "+e.getValue());
+            sb.append("\r\n");
         }
-        writer.write("\r\n");
+        sb.append("\r\n");
 
         if(messageBody != null && !messageBody.isBlank()){
-            writer.write(messageBody);
+            sb.append(messageBody);
         }
+
+        return sb.toString();
     }
 }

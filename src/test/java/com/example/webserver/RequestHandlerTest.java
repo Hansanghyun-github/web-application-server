@@ -42,8 +42,8 @@ class RequestHandlerTest {
                 Files.readAllBytes(Path.of(pathname)),
                 StandardCharsets.UTF_8);
         var expected = "HTTP/1.1 200 OK\r\n" +
-                "Content-Length: " + output.length() + "\r\n" +
-                "Content-Type: text/html;charset=utf-8\r\n" +
+                "content-type: text/html;charset=utf-8\r\n" +
+                "content-length: " + output.getBytes().length + "\r\n" +
                 "\r\n"+
                 output;
 

@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
@@ -17,15 +19,12 @@ class HttpRequestFactoryTest {
     @DisplayName("HttpRequest Test")
     void httpRequestTest() throws Exception {
         // given
-
         var input = String.join("\r\n",
                 "GET /index.html HTTP/1.1 ",
                 "Host: localhost:8080 ",
                 "Connection: keep-alive ",
                 "Accept: */* ",
-                "",
-                "hello world");
-        var body = String.join("\r\n", "hello world");
+                "");
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
                         new ByteArrayInputStream(input.getBytes())));
@@ -38,26 +37,27 @@ class HttpRequestFactoryTest {
         assertThat(request.getPath()).isEqualTo("/index.html");
         assertThat(request.getQuery()).isNull();
         assertThat(request.getVersion()).isEqualTo("HTTP/1.1");
-        assertThat(request.getMessageBody()).isEqualTo(body);
+        assertThat(request.getMessageBody()).isNull();
 
         Map<String, String> headers = request.getHeaders();
         assertThat(headers.size()).isEqualTo(3);
-        assertThat(headers.get("Host")).isEqualTo("localhost:8080");
-        assertThat(headers.get("Connection")).isEqualTo("keep-alive");
-        assertThat(headers.get("Accept")).isEqualTo("*/*");
+        assertThat(headers.get("host")).isEqualTo("localhost:8080");
+        assertThat(headers.get("connection")).isEqualTo("keep-alive");
+        assertThat(headers.get("accept")).isEqualTo("*/*");
     }
 
     @Test
-    @DisplayName("HttpRequest Test2")
-    void httpRequestTest2() throws Exception {
+    @DisplayName("HttpRequest Test with Message Body")
+    void httpRequestTestWithMessageBody() throws Exception {
         // given
         var body = String.join("\r\n",
                 "hello world",
                 "hello world2");
         var input = String.join("\r\n",
-                "GET /index.html HTTP/1.1 ",
+                "POST /index.html HTTP/1.1 ",
                 "Host: localhost:8080 ",
                 "Connection: keep-alive ",
+                "Content-Length: " + body.getBytes().length,
                 "Accept: */* ",
                 "",
                 body);
@@ -69,17 +69,17 @@ class HttpRequestFactoryTest {
         HttpRequest request = HttpRequestFactory.parse(reader);
 
         // then
-        assertThat(request.getMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(request.getMethod()).isEqualTo(HttpMethod.POST);
         assertThat(request.getPath()).isEqualTo("/index.html");
         assertThat(request.getQuery()).isNull();
         assertThat(request.getVersion()).isEqualTo("HTTP/1.1");
         assertThat(request.getMessageBody()).isEqualTo(body);
 
         Map<String, String> headers = request.getHeaders();
-        assertThat(headers.size()).isEqualTo(3);
-        assertThat(headers.get("Host")).isEqualTo("localhost:8080");
-        assertThat(headers.get("Connection")).isEqualTo("keep-alive");
-        assertThat(headers.get("Accept")).isEqualTo("*/*");
+        assertThat(headers.size()).isEqualTo(4);
+        assertThat(headers.get("host")).isEqualTo("localhost:8080");
+        assertThat(headers.get("connection")).isEqualTo("keep-alive");
+        assertThat(headers.get("content-length")).isEqualTo("" + body.getBytes().length);
+        assertThat(headers.get("accept")).isEqualTo("*/*");
     }
-
 }

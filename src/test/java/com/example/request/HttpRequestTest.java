@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
@@ -60,7 +61,8 @@ class HttpRequestTest {
 
         // when // then
         assertThatThrownBy(() -> request.setStartLine(startLine))
-                .isInstanceOf(AssertionError.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Invalid Http Request");
     }
     
     @Test
