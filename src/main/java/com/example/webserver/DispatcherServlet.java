@@ -23,9 +23,19 @@ public class DispatcherServlet {
         String output = new String(
                 Files.readAllBytes(Path.of(pathname)),
                 StandardCharsets.UTF_8);
+
         response.setMessageBody(output);
-        response.addHeader("Content-Type", "text/html;charset=utf-8");
+        addContentTypeHeader(response, pathname);
         response.addHeader("Content-Length", "" + output.getBytes().length);
         response.setStatusCode(StatusCode.OK);
+    }
+
+    private static void addContentTypeHeader(HttpResponse response, String pathname) {
+        if(pathname.endsWith("js"))
+            response.addHeader("Content-Type", "application/javascript");
+        else if(pathname.endsWith("css"))
+            response.addHeader("Content-Type", "text/css");
+        else
+            response.addHeader("Content-Type", "text/html;charset=utf-8");
     }
 }
