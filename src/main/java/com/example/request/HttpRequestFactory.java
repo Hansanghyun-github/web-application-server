@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,8 +30,19 @@ public class HttpRequestFactory {
     private static void parseStartLine(BufferedReader reader, HttpRequest request) throws IOException {
         String str = reader.readLine();
         if(str == null || str.isBlank())
-            throw new IllegalArgumentException("Invalid Http Request");
+            throw new IllegalArgumentException("Request is null");
+        if(!startWithHttpMethod(str))
+            throw new IllegalArgumentException("Invalid Request");
         request.setStartLine(str);
+    }
+
+    private static boolean startWithHttpMethod(String str) {
+        List<HttpMethod> collect = Arrays.stream(HttpMethod.values())
+                .filter((m) -> str.startsWith(m.toString()))
+                .toList();
+        assert(collect.size() <= 1);
+
+        return collect.size() == 1;
     }
 
     private static void parseHeader(BufferedReader reader, HttpRequest request) throws IOException {

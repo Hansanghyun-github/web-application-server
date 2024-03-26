@@ -1,6 +1,8 @@
-package com.example.response;
+package support;
 
 import com.example.request.HttpRequestFactory;
+import com.example.response.HttpResponse;
+import com.example.response.StatusCode;
 import com.example.util.HttpRequestUtils;
 
 import java.io.BufferedReader;

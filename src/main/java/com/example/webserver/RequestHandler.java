@@ -14,45 +14,67 @@ public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
     private final Socket connection;
+    private boolean close;
+    private final int TIMEOUT;
+
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
+        close = false;
+        TIMEOUT = 20 * 1000;
     }
 
+    @Override
     public void run() {
-        log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
-                connection.getPort());
+        log.debug("connect host: {}, port: {}", connection.getInetAddress(), connection.getPort());
         process(connection);
     }
 
     public void process(final Socket connection) {
         try (final var in = connection.getInputStream();
              final var out = connection.getOutputStream()) {
-            // TODO Exception을 Catch할 클래스(필터)가 필요하다.
+            connection.setSoTimeout(TIMEOUT);
+            handleRequest(in, out);
+        } catch (IOException | IllegalArgumentException e){
+            log.warn(e.getMessage());
+            // TODO error 메시지 보내줘야 함
+            // TODO 더 뒷 단에서 에러 처리하는게 어떨까
+        }
 
-            BufferedReader reader = getBufferedReader(in);
-            HttpRequest request;
-            try{
-                request = HttpRequestFactory.parse(reader);
-            } catch (IllegalArgumentException e){
-                log.debug(e.getMessage());
-                return;
-            }
+        close(connection);
+    }
+
+    private void handleRequest(InputStream in, OutputStream out) throws IOException {
+        BufferedReader reader = getBufferedReader(in);
+        DataOutputStream dos = new DataOutputStream(out);
+
+        while (!close){
+            HttpRequest request = HttpRequestFactory.parse(reader);
+            checkConnection(request);
             HttpResponse response = new HttpResponse();
             response.setVersion(request.getVersion());
-
             log.debug("method: {} path: {}", request.getMethod(), request.getPath());
-
             DispatcherServlet.frontController(request, response);
 
-            writeResponse(out, response);
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
+            writeResponse(dos, response);
         }
     }
 
-    private void writeResponse(OutputStream out, HttpResponse response) {
-        DataOutputStream dos = new DataOutputStream(out);
+    private void checkConnection(HttpRequest request) {
+        if(request.findHeader("connection").equals("close")){
+            close = true;
+        }
+    }
+
+    private void close(Socket connection) {
+        try {
+            connection.close();
+        } catch (IOException e) {
+            // ignore
+        }
+    }
+
+    private void writeResponse(DataOutputStream dos, HttpResponse response) {
         writeHeaders(dos, response);
         if(hasMessageBody(response))
             writeMessageBody(dos, response.getMessageBody());

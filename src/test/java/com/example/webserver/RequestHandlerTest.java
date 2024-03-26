@@ -1,16 +1,12 @@
 package com.example.webserver;
 
-import com.example.request.HttpMethod;
-import com.example.request.HttpRequest;
-import com.example.request.HttpRequestFactory;
 import com.example.response.HttpResponse;
-import com.example.response.HttpResponseFactory;
 import com.example.response.StatusCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import support.HttpResponseFactory;
 import support.StubSocket;
 
-import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,7 +22,7 @@ class RequestHandlerTest {
         final String httpRequest= String.join("\r\n",
                 "GET /index.html HTTP/1.1 ",
                 "Host: localhost:8080 ",
-                "Connection: keep-alive ",
+                "Connection: close",
                 "Accept: */* ",
                 "");
 
