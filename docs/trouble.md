@@ -13,6 +13,6 @@
 
 응답의 content-type 헤더를 잘못 입력했기 때문이다.
 
-각각의 파일의 응답은 `text/html`, `text/js`, `text/css`를 입력해줘야 한다.
+각각의 파일의 응답은 `text/html`, `application/javascript`, `text/css`를 입력해줘야 한다.
 
 > 나는 처음에 지속적인 연결 기능을 구현하지 못해 이런 문제가 발생했다 생각했다.
