@@ -2,9 +2,7 @@ package com.example.webserver;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Map;
 
 import com.example.request.HttpRequest;
 import com.example.request.HttpRequestFactory;
@@ -43,47 +41,45 @@ public class RequestHandler extends Thread {
             HttpResponse response = new HttpResponse(request.getVersion());
 
             log.debug("method: {} path: {}", request.getMethod(), request.getPath());
-            log.debug(request.toString());
+
             DispatcherServlet.frontController(request, response);
 
-            DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = response.getMessageBody().getBytes();
-            response200Header(dos, body.length);
-            responseBody(dos, body);
+            writeResponse(out, response);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
     }
 
-    private String getRequest(BufferedReader reader) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        String str;
-        while((str = reader.readLine()) != null){
-            sb.append(str);
-            sb.append("\r\n");
-        }
+    private void writeResponse(OutputStream out, HttpResponse response) {
+        DataOutputStream dos = new DataOutputStream(out);
+        writeHeaders(dos, response);
+        if(hasMessageBody(response))
+            writeMessageBody(dos, response.getMessageBody());
+    }
 
-        return sb.toString();
+    private boolean hasMessageBody(HttpResponse response) {
+        return response.containsHeader("content-length");
     }
 
     private static BufferedReader getBufferedReader(InputStream in) {
         return new BufferedReader(new InputStreamReader(in));
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void writeHeaders(DataOutputStream dos, HttpResponse response) {
         try {
-            dos.writeBytes("HTTP/1.1 200 OK\r\n");
-            dos.writeBytes("content-type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("content-length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("HTTP/1.1 200 OK\r\n"); // TODO status 별로 write
+            for(Map.Entry<String, String> e : response.getHeaders().entrySet()){
+                dos.writeBytes(e.getKey() + ": " + e.getValue() + "\r\n");
+            }
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
-    private void responseBody(DataOutputStream dos, byte[] body) {
+    private void writeMessageBody(DataOutputStream dos, String body) {
         try {
-            dos.write(body, 0, body.length);
+            dos.write(body.getBytes(), 0, body.getBytes().length);
             dos.flush();
         } catch (IOException e) {
             log.error(e.getMessage());

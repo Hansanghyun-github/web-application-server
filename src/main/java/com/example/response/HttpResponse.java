@@ -26,7 +26,15 @@ public class HttpResponse {
     }
 
     public void addHeader(String key, String value){
-        headers.put(key, value);
+        headers.put(key.toLowerCase(), value);
+    }
+
+    public boolean containsHeader(String key){
+        return headers.containsKey(key);
+    }
+
+    public String findHeader(String key){
+        return headers.get(key);
     }
 
     public void setMessageBody(String messageBody) {

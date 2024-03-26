@@ -25,7 +25,7 @@ public class DispatcherServlet {
                 StandardCharsets.UTF_8);
         response.setMessageBody(output);
         response.addHeader("Content-Type", "text/html;charset=utf-8");
-        response.addHeader("Content-Length", ""+output.length());
+        response.addHeader("Content-Length", "" + output.getBytes().length);
         response.setStatusCode(StatusCode.OK);
     }
 }
