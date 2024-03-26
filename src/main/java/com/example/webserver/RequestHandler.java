@@ -33,10 +33,17 @@ public class RequestHandler extends Thread {
             // TODO Exception을 Catch할 클래스(필터)가 필요하다.
 
             BufferedReader reader = getBufferedReader(in);
-            HttpRequest request = HttpRequestFactory.parse(reader);
+            HttpRequest request;
+            try{
+                request = HttpRequestFactory.parse(reader);
+            } catch (IllegalArgumentException e){
+                log.debug(e.getMessage());
+                return;
+            }
             HttpResponse response = new HttpResponse(request.getVersion());
 
             log.debug("method: {} path: {}", request.getMethod(), request.getPath());
+            log.debug(request.toString());
             DispatcherServlet.frontController(request, response);
 
             DataOutputStream dos = new DataOutputStream(out);

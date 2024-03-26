@@ -17,9 +17,6 @@ public class DispatcherServlet {
     }
 
     public static void frontController(HttpRequest request, HttpResponse response) throws IOException {
-
-
-        //log.debug("Path is Supported");
         String pathname = "webapp" + request.getPath();
         if(request.getPath().equals("/"))
             pathname += "index.html";

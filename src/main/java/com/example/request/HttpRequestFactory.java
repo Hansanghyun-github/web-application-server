@@ -48,11 +48,15 @@ public class HttpRequestFactory {
         int remainedContentLength = Integer.parseInt(request.findHeader("content-length"));
         String str;
         List<String> list = new ArrayList<>();
-        while((str = reader.readLine()) != null && remainedContentLength >= 0){
+        while((str = reader.readLine()) != null && canReadMoreContent(remainedContentLength)){
             list.add(str);
             remainedContentLength -= str.getBytes().length;
         }
 
         request.setMessageBody(String.join("\r\n", list.toArray(new String[0])));
+    }
+
+    private static boolean canReadMoreContent(int remainedContentLength) {
+        return remainedContentLength >= 0;
     }
 }
