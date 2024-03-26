@@ -38,7 +38,8 @@ public class RequestHandler extends Thread {
                 log.debug(e.getMessage());
                 return;
             }
-            HttpResponse response = new HttpResponse(request.getVersion());
+            HttpResponse response = new HttpResponse();
+            response.setVersion(request.getVersion());
 
             log.debug("method: {} path: {}", request.getMethod(), request.getPath());
 

@@ -17,7 +17,7 @@ public class HttpResponse {
     public HttpResponse() {
     }
 
-    public HttpResponse(String version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 

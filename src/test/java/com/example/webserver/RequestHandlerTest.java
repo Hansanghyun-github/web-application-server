@@ -1,21 +1,21 @@
 package com.example.webserver;
 
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import com.example.request.HttpMethod;
+import com.example.request.HttpRequest;
+import com.example.request.HttpRequestFactory;
+import com.example.response.HttpResponse;
+import com.example.response.HttpResponseFactory;
+import com.example.response.StatusCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import support.StubSocket;
 
 import java.io.*;
-import java.net.Socket;
-import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class RequestHandlerTest {
 
@@ -41,12 +41,21 @@ class RequestHandlerTest {
         String output = new String(
                 Files.readAllBytes(Path.of(pathname)),
                 StandardCharsets.UTF_8);
-        var expected = "HTTP/1.1 200 OK\r\n" +
-                "content-type: text/html;charset=utf-8\r\n" +
-                "content-length: " + output.getBytes().length + "\r\n" +
-                "\r\n"+
-                output;
 
-        assertThat(socket.output()).isEqualTo(expected);
+        HttpResponse response = HttpResponseFactory.parse(socket.output());
+
+        assertThat(response.getVersion()).isEqualTo("HTTP/1.1");
+        assertThat(response.getStatusCode()).isEqualTo(StatusCode.OK);
+        assertThat(HttpResponseFactory
+                .isValidHeader(response,
+                        "content-type",
+                        "text/html;charset=utf-8"))
+                .isTrue();
+        assertThat(HttpResponseFactory
+                .isValidHeader(response,
+                        "content-length",
+                        "" + output.getBytes().length))
+                .isTrue();
+        assertThat(response.getMessageBody()).isEqualTo(output);
     }
 }
