@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Map;
 
+import com.example.request.HttpMethod;
 import com.example.request.HttpRequest;
 import com.example.request.HttpRequestFactory;
 import com.example.response.HttpResponse;
@@ -54,10 +55,21 @@ public class RequestHandler extends Thread {
             HttpResponse response = new HttpResponse();
             response.setVersion(request.getVersion());
             log.debug("method: {} path: {}", request.getMethod(), request.getPath());
-            DispatcherServlet.frontController(request, response);
+
+            if(isFileRequest(request)){
+                FileRequestHandler.handle(request, response);
+            }
+            else{
+                DispatcherServlet.frontController(request, response);
+            }
 
             writeResponse(dos, response);
         }
+    }
+
+    private boolean isFileRequest(HttpRequest request) {
+        return request.getMethod().equals(HttpMethod.GET)
+                && request.getPath().contains(".");
     }
 
     private void checkConnection(HttpRequest request) {
