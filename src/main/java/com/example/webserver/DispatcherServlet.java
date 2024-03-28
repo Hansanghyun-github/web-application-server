@@ -35,7 +35,29 @@ public class DispatcherServlet {
             DataBase.addUser(user);
             response.setStatusCode(StatusCode.Found);
             response.addHeader("Location", "/index.html");
-
+            return;
         }
+        if(request.getMethod().equals(HttpMethod.POST)
+                && request.getPath().equals("/user/login")){
+            Map<String, String> query = HttpRequestUtils.parseQueryString(request.getMessageBody());
+            if(isAuthenticated(query)){
+                response.setStatusCode(StatusCode.Found);
+                response.addHeader("Location", "/index.html");
+                response.addHeader("Set-Cookie", "logined=true");
+            }
+            else{
+                response.setStatusCode(StatusCode.Found);
+                response.addHeader("Location", "/user/login_failed.html");
+                response.addHeader("Set-Cookie", "logined=false");
+            }
+        }
+    }
+
+    private static boolean isAuthenticated(Map<String, String> query) {
+        User user = DataBase.findUserById(query.get("userId"));
+        return user != null
+                && user
+                .getPassword()
+                .equals(query.get("password"));
     }
 }

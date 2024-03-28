@@ -31,9 +31,9 @@ public class HttpRequestFactory {
     private static void parseStartLine(BufferedReader reader, HttpRequest request) throws IOException {
         String str = reader.readLine();
         if(str == null || str.isBlank())
-            throw new IllegalArgumentException("Request is null");
+            throw new IllegalArgumentException("Request is null"); // 그냥 의미없는 처리로 보낸다
         if(!startWithHttpMethod(str))
-            throw new IllegalArgumentException("Invalid Request");
+            throw new IllegalArgumentException("Invalid Request"); // 이런 요청을 막아야 한다
         request.setStartLine(str);
     }
 
