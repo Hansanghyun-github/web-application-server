@@ -1,6 +1,7 @@
 package com.example.request;
 
 import com.example.util.HttpRequestUtils;
+import com.example.util.IOUtils;
 import com.example.webserver.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,15 +59,11 @@ public class HttpRequestFactory {
     }
 
     private static void parseMessageBody(BufferedReader reader, HttpRequest request) throws IOException {
-        int remainedContentLength = Integer.parseInt(request.findHeader("content-length"));
-        String str;
-        List<String> list = new ArrayList<>();
-        while((str = reader.readLine()) != null && canReadMoreContent(remainedContentLength)){
-            list.add(str);
-            remainedContentLength -= str.getBytes().length;
-        }
+        int contentLength = Integer.parseInt(request.findHeader("content-length"));
+        char[] body = new char[contentLength];
+        reader.read(body, 0, contentLength);
 
-        request.setMessageBody(String.join("\r\n", list.toArray(new String[0])));
+        request.setMessageBody(String.copyValueOf(body));
     }
 
     private static boolean canReadMoreContent(int remainedContentLength) {
