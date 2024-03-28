@@ -5,6 +5,7 @@ import com.example.request.HttpMethod;
 import com.example.request.HttpRequest;
 import com.example.response.HttpResponse;
 import com.example.response.StatusCode;
+import com.example.util.HttpRequestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +23,9 @@ public class DispatcherServlet {
     public static void frontController(HttpRequest request, HttpResponse response) {
         // TODO http method 별로 처리해줘야 한다
 
-        if(request.getMethod().equals(HttpMethod.GET)
+        if(request.getMethod().equals(HttpMethod.POST)
                 && request.getPath().equals("/user/create")){
-            Map<String, String> query = request.getQuery();
+            Map<String, String> query = HttpRequestUtils.parseQueryString(request.getMessageBody());
             User user = new User(query.get("userId"),
                     query.get("password"),
                     query.get("name"),
