@@ -17,22 +17,30 @@ public class FileRequestHandler {
     }
 
     public static void handle(HttpRequest request, HttpResponse response) throws IOException {
-        String output = getOutput(request);
+        Path path = getPath(request);
+        if(Files.exists(path) == false)
+            throw new IllegalArgumentException("Invalid path");
 
-        response.setMessageBody(output);
+        String contents = getFileContents(path);
+
+        response.setMessageBody(contents);
         addContentTypeHeader(response, request.getPath());
-        response.addHeader("Content-Length", "" + output.getBytes().length);
+        response.addHeader("Content-Length", "" + contents.getBytes().length);
         response.setStatusCode(StatusCode.OK);
     }
 
-    private static String getOutput(HttpRequest request) throws IOException {
+    private static String getFileContents(Path path) throws IOException {
+        String output = new String(
+                Files.readAllBytes(path),
+                StandardCharsets.UTF_8);
+        return output;
+    }
+
+    private static Path getPath(HttpRequest request) {
         String pathname = "webapp" + request.getPath();
         if(request.getPath().equals("/"))
             pathname += "index.html";
-        String output = new String(
-                Files.readAllBytes(Path.of(pathname)),
-                StandardCharsets.UTF_8);
-        return output;
+        return Path.of(pathname);
     }
 
     private static void addContentTypeHeader(HttpResponse response, String pathname) {
