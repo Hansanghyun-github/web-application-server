@@ -1,5 +1,6 @@
 package com.example.webserver;
 
+import com.example.db.DataBase;
 import com.example.model.User;
 import com.example.request.HttpMethod;
 import com.example.request.HttpRequest;
@@ -30,7 +31,11 @@ public class DispatcherServlet {
                     query.get("password"),
                     query.get("name"),
                     query.get("email"));
-            log.debug("{}", user.toString());
+
+            DataBase.addUser(user);
+            response.setStatusCode(StatusCode.Found);
+            response.addHeader("Location", "/index.html");
+
         }
     }
 }

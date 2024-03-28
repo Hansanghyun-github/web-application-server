@@ -8,6 +8,7 @@ import com.example.request.HttpMethod;
 import com.example.request.HttpRequest;
 import com.example.request.HttpRequestFactory;
 import com.example.response.HttpResponse;
+import com.example.response.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,9 +88,21 @@ public class RequestHandler extends Thread {
     }
 
     private void writeResponse(DataOutputStream dos, HttpResponse response) {
-        writeHeaders(dos, response);
-        if(hasMessageBody(response))
-            writeMessageBody(dos, response.getMessageBody());
+        try {
+            writeStartLine(dos, response);
+            writeHeaders(dos, response);
+            if(hasMessageBody(response))
+                writeMessageBody(dos, response.getMessageBody());
+        } catch (IOException e) {
+            log.warn(e.getMessage(), e);
+        }
+    }
+
+    private void writeStartLine(DataOutputStream dos, HttpResponse response) throws IOException {
+        if(response.getStatusCode() == StatusCode.OK)
+            dos.writeBytes(response.getVersion() + " 200 " + response.getStatusCode() + "\r\n");
+        else if(response.getStatusCode() == StatusCode.Found)
+            dos.writeBytes(response.getVersion() + " 302 " + response.getStatusCode() + "\r\n");
     }
 
     private boolean hasMessageBody(HttpResponse response) {
@@ -100,24 +113,15 @@ public class RequestHandler extends Thread {
         return new BufferedReader(new InputStreamReader(in));
     }
 
-    private void writeHeaders(DataOutputStream dos, HttpResponse response) {
-        try {
-            dos.writeBytes("HTTP/1.1 200 OK\r\n"); // TODO status 별로 write
-            for(Map.Entry<String, String> e : response.getHeaders().entrySet()){
-                dos.writeBytes(e.getKey() + ": " + e.getValue() + "\r\n");
-            }
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            log.error(e.getMessage());
+    private void writeHeaders(DataOutputStream dos, HttpResponse response) throws IOException {
+        for(Map.Entry<String, String> e : response.getHeaders().entrySet()){
+            dos.writeBytes(e.getKey() + ": " + e.getValue() + "\r\n");
         }
+        dos.writeBytes("\r\n");
     }
 
-    private void writeMessageBody(DataOutputStream dos, String body) {
-        try {
-            dos.write(body.getBytes(), 0, body.getBytes().length);
-            dos.flush();
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
+    private void writeMessageBody(DataOutputStream dos, String body) throws IOException {
+        dos.write(body.getBytes(), 0, body.getBytes().length);
+        dos.flush();
     }
 }
