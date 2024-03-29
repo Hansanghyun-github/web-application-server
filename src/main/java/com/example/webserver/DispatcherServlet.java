@@ -10,11 +10,8 @@ import com.example.util.HttpRequestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DispatcherServlet {
     private static final Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
@@ -40,7 +37,7 @@ public class DispatcherServlet {
         if(request.getMethod().equals(HttpMethod.POST)
                 && request.getPath().equals("/user/login")){
             Map<String, String> query = HttpRequestUtils.parseQueryString(request.getMessageBody());
-            if(isAuthenticated(query)){
+            if(loginSuccessed(query)){
                 response.setStatusCode(StatusCode.Found);
                 response.addHeader("Location", "/index.html");
                 response.addHeader("Set-Cookie", "logined=true");
@@ -50,10 +47,40 @@ public class DispatcherServlet {
                 response.addHeader("Location", "/user/login_failed.html");
                 response.addHeader("Set-Cookie", "logined=false");
             }
+            return;
+        }
+
+        if(request.getMethod().equals(HttpMethod.GET)
+                && request.getPath().equals("/user/list")){
+            if(!isAuthenticated(request)){
+                response.setStatusCode(StatusCode.Found);
+                response.addHeader("Location", "/user/login.html");
+                response.addHeader("Set-Cookie", "logined=false");
+                return;
+            }
+
+            response.setStatusCode(StatusCode.OK);
+            String body = DataBase.findAll()
+                    .stream()
+                    .map((u) -> u.toString() + "\r\n")
+                    .collect(Collectors.joining());
+            response.setMessageBody(
+                    body);
+            response.addHeader("content-length", "" + body.getBytes().length);
+            response.addHeader("content-type", "text/html;charset=utf-8");
         }
     }
 
-    private static boolean isAuthenticated(Map<String, String> query) {
+    private static boolean isAuthenticated(HttpRequest request) {
+        String header = request.findHeader("cookie");
+        if(header == null)
+            return false;
+
+        String cookie = HttpRequestUtils.parseCookies(header).get("logined");
+        return cookie != null && cookie.equals("true");
+    }
+
+    private static boolean loginSuccessed(Map<String, String> query) {
         User user = DataBase.findUserById(query.get("userId"));
         return user != null
                 && user
