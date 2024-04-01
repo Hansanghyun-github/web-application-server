@@ -34,17 +34,6 @@ public class HttpResponseFactory {
                         new ByteArrayInputStream(output.getBytes())));
     }
 
-    public static boolean isValidHeader(HttpResponse response,
-                                        String key,
-                                        String value) {
-        if (!response.containsHeader(key))
-            return false;
-        if (response.findHeader(key).equals(value))
-            return true;
-
-        return false;
-    }
-
     private static void parseStartLine(BufferedReader reader, HttpResponse response) throws IOException {
         String str = reader.readLine();
         if (str == null || str.isBlank())

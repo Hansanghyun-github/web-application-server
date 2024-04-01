@@ -46,14 +46,8 @@ class FileRequestHandlerTest {
                 Files.readAllBytes(Path.of(pathname)),
                 StandardCharsets.UTF_8);
 
-        assertThat(HttpResponseFactory
-                .isValidHeader(response,
-                        "content-length",
-                        "" + output.getBytes().length)).isTrue();
-        assertThat(HttpResponseFactory
-                .isValidHeader(response,
-                        "content-type",
-                        "text/html;charset=utf-8")).isTrue();
+        assertThat(response.findHeader("content-length")).isEqualTo("" + output.getBytes().length);
+        assertThat(response.findHeader("content-type")).isEqualTo("text/html;charset=utf-8");
         assertThat(response.getMessageBody()).isEqualTo(output);
     }
     @Test

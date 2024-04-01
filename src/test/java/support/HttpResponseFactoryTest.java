@@ -41,10 +41,8 @@ public class HttpResponseFactoryTest {
         // then
         assertThat(response.getVersion()).isEqualTo("HTTP/1.1");
         assertThat(response.getStatusCode()).isEqualTo(StatusCode.OK);
-        assertThat(HttpResponseFactory
-                .isValidHeader(response,
-                        "content-length",
-                        "" + body.getBytes().length)).isTrue();
+        assertThat(response.findHeader("content-length")).isEqualTo("" + body.getBytes().length);
+        assertThat(response.findHeader("content-type")).isEqualTo("text/html;charset=utf-8");
         assertThat(response.getMessageBody()).isEqualTo(body);
     }
 }
