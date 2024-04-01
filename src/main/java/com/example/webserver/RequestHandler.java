@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Map;
 
+import com.example.config.ControllerList;
+import com.example.controller.Controller;
 import com.example.request.HttpMethod;
 import com.example.request.HttpRequest;
 import com.example.request.HttpRequestFactory;
@@ -57,11 +59,12 @@ public class RequestHandler extends Thread {
             response.setVersion(request.getVersion());
             log.debug("method: {} path: {}", request.getMethod(), request.getPath());
 
-            if(isFileRequest(request)){
+            Controller controller = ControllerList.getController(request.getPath());
+            if(controller == null){
                 FileRequestHandler.handle(request, response);
             }
             else{
-                DispatcherServlet.frontController(request, response);
+                controller.service(request, response);
             }
 
             writeResponse(dos, response);
