@@ -58,15 +58,17 @@ public class RequestHandler extends Thread {
             HttpResponse response = new HttpResponse();
             response.setVersion(request.getVersion());
             log.debug("method: {} path: {}", request.getMethod(), request.getPath());
+            if(isFileRequest((request))){
+                FileRequestHandler.handle(request, response);
+                writeResponse(dos, response);
+                continue;
+            }
 
             Controller controller = ControllerList.getController(request.getPath());
-            if(controller == null){
-                FileRequestHandler.handle(request, response);
-            }
-            else{
-                controller.service(request, response);
-            }
+            if(controller == null)
+                throw new IllegalArgumentException("Invalid Request");
 
+            controller.service(request, response);
             writeResponse(dos, response);
         }
     }
