@@ -14,7 +14,7 @@ public class HttpRequest {
     private String path;
     private Map<String, String> query;
     private String version;
-    private final Map<String, String> headers = new HashMap<>();
+    private Map<String, String> headers;
     private String messageBody;
 
     HttpRequest() {
@@ -54,8 +54,8 @@ public class HttpRequest {
         this.method = HttpMethod.lookup(method);
     }
 
-    public void addHeader(HttpRequestUtils.Pair pair){
-        headers.put(pair.getKey().toLowerCase(), pair.getValue());
+    public void setHeaders(Map<String, String> headers){
+        this.headers = Map.copyOf(headers);
     }
 
     public boolean containsHeader(String key){

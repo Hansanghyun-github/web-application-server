@@ -10,9 +10,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class HttpRequestFactory {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -47,11 +45,14 @@ public class HttpRequestFactory {
     }
 
     private static void parseHeader(BufferedReader reader, HttpRequest request) throws IOException {
+        Map<String, String> headers = new HashMap<>();
         String str;
-        while((str = reader.readLine()) != null){
+        while((str = reader.readLine()) != null) {
             if(str.isBlank()) break;
-            request.addHeader(HttpRequestUtils.parseHeader(str));
+            HttpRequestUtils.Pair header = HttpRequestUtils.parseHeader(str);
+            headers.put(header.getKey().toLowerCase(), header.getValue());
         }
+        request.setHeaders(headers);
     }
 
     private static boolean hasMessageBody(HttpRequest request) {
