@@ -1,15 +1,13 @@
 package com.example.request;
 
 import com.example.util.HttpRequestUtils;
-import com.example.util.IOUtils;
+import com.example.util.HttpVersion;
 import com.example.webserver.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 
 public class HttpRequestFactory {
@@ -18,21 +16,52 @@ public class HttpRequestFactory {
     }
 
     public static HttpRequest parse(BufferedReader reader) throws IOException {
-        HttpRequest request = new HttpRequest();
-        parseStartLine(reader, request);
-        parseHeader(reader, request);
-        if(hasMessageBody(request))
-            parseMessageBody(reader, request);
+        String messageBody = null;
+        RequestInfo info = parseStartLine(reader);
+
+        Map<String, String> headers = parseHeaders(reader);
+        if(hasMessageBody(headers))
+            messageBody = parseMessageBody(reader, headers.get("content-length"));
+
+        HttpRequest request = new HttpRequest(
+                HttpMethod.lookup(info.getMethod()),
+                info.getPath(),
+                info.getQuery(),
+                info.getVersion(),
+                headers,
+                messageBody);
+
         return request;
     }
 
-    private static void parseStartLine(BufferedReader reader, HttpRequest request) throws IOException {
-        String str = reader.readLine();
-        if(str == null || str.isBlank())
+    private static RequestInfo parseStartLine(BufferedReader reader) throws IOException {
+        RequestInfo info = new RequestInfo();
+        String line = reader.readLine();
+        if(line == null || line.isBlank())
             throw new IllegalArgumentException("Request is null"); // 그냥 의미없는 처리로 보낸다
-        if(!startWithHttpMethod(str))
+        if(!startWithHttpMethod(line))
             throw new IllegalArgumentException("Invalid Request"); // 이런 요청을 막아야 한다
-        request.setStartLine(str);
+
+        String[] startLine = line.split(" ");
+        if(startLine.length != 3)
+            throw new IllegalArgumentException("Invalid Http Request");
+
+        info.setMethod(startLine[0]);
+
+        String[] str = startLine[1].split("\\?");
+        if(str.length <= 0 || str.length >= 3)
+            throw new IllegalArgumentException("Invalid Http Request");
+
+        info.setPath(str[0]);
+
+        if(str.length == 2)
+            info.setQuery(HttpRequestUtils.parseQueryString(str[1]));
+
+        info.setVersion(startLine[2]);
+        if(HttpVersion.isSupported(info.getVersion()) == false)
+            throw new IllegalArgumentException("Not Supported Version");
+
+        return info;
     }
 
     private static boolean startWithHttpMethod(String str) {
@@ -44,7 +73,7 @@ public class HttpRequestFactory {
         return collect.size() == 1;
     }
 
-    private static void parseHeader(BufferedReader reader, HttpRequest request) throws IOException {
+    private static Map<String, String> parseHeaders(BufferedReader reader) throws IOException {
         Map<String, String> headers = new HashMap<>();
         String str;
         while((str = reader.readLine()) != null) {
@@ -52,19 +81,19 @@ public class HttpRequestFactory {
             HttpRequestUtils.Pair header = HttpRequestUtils.parseHeader(str);
             headers.put(header.getKey().toLowerCase(), header.getValue());
         }
-        request.setHeaders(headers);
+        return headers;
     }
 
-    private static boolean hasMessageBody(HttpRequest request) {
-        return request.containsHeader("content-length");
+    private static boolean hasMessageBody(Map<String, String> headers) {
+        return headers.containsKey("content-length");
     }
 
-    private static void parseMessageBody(BufferedReader reader, HttpRequest request) throws IOException {
-        int contentLength = Integer.parseInt(request.findHeader("content-length"));
-        char[] body = new char[contentLength];
-        reader.read(body, 0, contentLength);
+    private static String parseMessageBody(BufferedReader reader, String contentLength) throws IOException {
+        int len = Integer.parseInt(contentLength);
+        char[] body = new char[len];
+        reader.read(body, 0, len);
 
-        request.setMessageBody(String.copyValueOf(body));
+        return String.copyValueOf(body);
     }
 
     private static boolean canReadMoreContent(int remainedContentLength) {

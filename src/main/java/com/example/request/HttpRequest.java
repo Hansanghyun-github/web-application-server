@@ -9,53 +9,20 @@ import java.util.Map;
 
 @Getter
 public class HttpRequest {
-    // TODO 불변 객체로
-    private HttpMethod method;
-    private String path;
-    private Map<String, String> query;
-    private String version;
-    private Map<String, String> headers;
-    private String messageBody;
+    private final HttpMethod method;
+    private final String path;
+    private final Map<String, String> query;
+    private final String version;
+    private final Map<String, String> headers;
+    private final String messageBody;
 
-    HttpRequest() {
-    }
-
-    public void setStartLine(String line){
-        String[] startLine = line.split(" ");
-        if(startLine.length != 3)
-            throw new IllegalArgumentException("Invalid Http Request");
-
-        setMethod(startLine[0]);
-
-        String[] str = startLine[1].split("\\?");
-        if(str.length <= 0 || str.length >= 3)
-            throw new IllegalArgumentException("Invalid Http Request");
-        setPath(str[0]);
-
-        if(str.length == 2)
-            query = HttpRequestUtils.parseQueryString(str[1]);
-
-        String version = startLine[2];
-        if(HttpVersion.isSupported(version) == false)
-            throw new IllegalArgumentException("Not Supported Version");
-
-        setVersion(version);
-    }
-
-    private void setVersion(String version) {
-        this.version = version;
-    }
-
-    private void setPath(String path) {
+    HttpRequest(HttpMethod method, String path, Map<String, String> query, String version, Map<String, String> headers, String messageBody) {
+        this.method = method;
         this.path = path;
-    }
-
-    private void setMethod(String method) {
-        this.method = HttpMethod.lookup(method);
-    }
-
-    public void setHeaders(Map<String, String> headers){
+        this.query = Map.copyOf(query);
+        this.version = version;
         this.headers = Map.copyOf(headers);
+        this.messageBody = messageBody;
     }
 
     public boolean containsHeader(String key){
@@ -64,10 +31,6 @@ public class HttpRequest {
 
     public String findHeader(String key){
         return headers.get(key);
-    }
-
-    public void setMessageBody(String messageBody) {
-        this.messageBody = messageBody;
     }
 
     @Override

@@ -35,7 +35,7 @@ class HttpRequestFactoryTest {
         // then
         assertThat(request.getMethod()).isEqualTo(HttpMethod.GET);
         assertThat(request.getPath()).isEqualTo("/index.html");
-        assertThat(request.getQuery()).isNull();
+        assertThat(request.getQuery().size()).isZero();
         assertThat(request.getVersion()).isEqualTo("HTTP/1.1");
         assertThat(request.getMessageBody()).isNull();
 
@@ -71,7 +71,7 @@ class HttpRequestFactoryTest {
         // then
         assertThat(request.getMethod()).isEqualTo(HttpMethod.POST);
         assertThat(request.getPath()).isEqualTo("/index.html");
-        assertThat(request.getQuery()).isNull();
+        assertThat(request.getQuery().size()).isZero();
         assertThat(request.getVersion()).isEqualTo("HTTP/1.1");
         assertThat(request.getMessageBody()).isEqualTo(body);
 
